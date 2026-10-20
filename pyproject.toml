@@ -12,12 +12,14 @@ dependencies = [
     "python-dotenv",
     "uvicorn",
     "requests",
+    "onnxruntime<1.24; sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
 
 [project.optional-dependencies]
 dev = [
     "ruff",
     "pyright",
+    "pytest",
 ]
 
 [tool.ruff]
@@ -33,3 +35,10 @@ reportMissingTypeStubs = "warning"
 reportImportCycles = "error"
 
 pythonVersion = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "live: requires a running Gemini API key and a populated ChromaDB (skipped in CI)",
+]

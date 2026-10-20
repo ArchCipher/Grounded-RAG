@@ -5,6 +5,7 @@ chunking/indexing to ChromaIndexer and retrieval to ChromaRetriever.
 """
 
 import logging
+import os
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -15,10 +16,34 @@ import pymupdf4llm
 from chroma.hash_manager import FileHashManager
 from chroma.indexer import ChromaIndexer
 from chroma.models import CollectionResult
-from chroma.retriever import ChromaRetriever
+from chroma.retriever import DEFAULT_MAX_DISTANCE, ChromaRetriever
 from chroma.text_splitter import TextSplitter
 
 logger = logging.getLogger("RagClient")
+
+
+def _env_int(name: str, default: int) -> int:
+    """Read an int from the environment, falling back to default on missing/invalid."""
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        logger.warning("Invalid %s=%r, using default %d", name, raw, default)
+        return default
+
+
+def _env_float(name: str, default: float) -> float:
+    """Read a float from the environment, falling back to default on missing/invalid."""
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        logger.warning("Invalid %s=%r, using default %s", name, raw, default)
+        return default
 
 
 class RagClient:
@@ -40,21 +65,33 @@ class RagClient:
         client = chromadb.PersistentClient(path=persistent_storage)
         collection = client.get_or_create_collection(name)
         lock = threading.Lock()
-        # instantiate text splitter
-        text_splitter = TextSplitter()
+        # instantiate text splitter (chunk size/overlap overridable via env)
+        text_splitter = TextSplitter(
+            chunk_size=_env_int("CHUNK_SIZE", TextSplitter.DEFAULT_CHUNK_SIZE),
+            chunk_overlap=_env_int("CHUNK_OVERLAP", TextSplitter.DEFAULT_CHUNK_OVERLAP),
+        )
         # create hash file path and instantiate hash manager
         hash_file_path = Path(persistent_storage) / Path(hash_filename)
         hash_manager = FileHashManager(hash_file_path)
-        # instantiate indexer and retriever
+        # instantiate indexer and retriever (distance threshold overridable via env)
         self.indexer = ChromaIndexer(collection, lock, text_splitter, hash_manager)
-        self.retriever = ChromaRetriever(collection)
-        # store collection path
+        self.retriever = ChromaRetriever(
+            collection,
+            max_distance=_env_float("MAX_DISTANCE", DEFAULT_MAX_DISTANCE),
+        )
+        # store collection path and default result count
         self.collection_path = collection_path
+        self.n_results = _env_int("N_RESULTS", 5)
 
-    def get_context(self, message: str, n_results: int = 50) -> str:
+    def get_context(self, message: str, n_results: int | None = None) -> str:
         """Return formatted context string from top n_results chunks for message."""
-        results = self.retriever.get_query_results(message, n_results)
-        return self.retriever.get_context(results)
+        k = self.n_results if n_results is None else n_results
+        results = self.retriever.get_query_results(message, k)
+        context = self.retriever.get_context(results)
+        notice = self.retriever.missing_rule_notice(message)
+        if notice:
+            return f"{notice}\n\n{context}" if context else notice
+        return context
 
     def reload_collection(self) -> CollectionResult:
         """

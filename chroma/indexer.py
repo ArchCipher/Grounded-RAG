@@ -2,7 +2,6 @@
 
 import hashlib
 import logging
-import re
 from pathlib import Path
 from threading import Lock
 
@@ -10,7 +9,7 @@ from chromadb import Collection
 
 from chroma.hash_manager import FileHashManager
 from chroma.models import CollectionResult
-from chroma.text_splitter import TextSplitter
+from chroma.text_splitter import RULE_HEADER_PATTERN, TextSplitter
 
 logger = logging.getLogger("ChromaIndexer")
 
@@ -46,7 +45,7 @@ class ChromaIndexer:
                 self.hash_manager.update(file)
             except Exception as e:
                 errors.append(f"Error processing file {file}: {e}")
-                break
+                continue
         if files_indexed:
             self.hash_manager.save(self.hash_manager.file_hashes)
         return CollectionResult(files=files_indexed, errors=errors)
@@ -103,11 +102,10 @@ class ChromaIndexer:
     def _add_chunk(self, chunk: str, source: str, chunk_index: int) -> None:
         """Add a chunk to collection"""
         chunk_id = self._generate_md5_hash(chunk, source)
-        # match rule_id: ## **(numbers).(numbers)(spaces)(rule_id).
-        # rule_id: (3 or more uppercase letters)(digits)-C(optional PP)
-        rule_id_match = re.search(
-            r"## \*\*\d+\.\d+\s+([A-Z]{3,}\d+-C(?:PP)?)\.", chunk[:2000]
-        )
+        # Extract rule_id from the chunk's leading rule header (if any). Reuses the
+        # same pattern the splitter uses so bold/plain/multi-level headers all match.
+        first_line = chunk.split("\n", 1)[0]
+        rule_id_match = RULE_HEADER_PATTERN.match(first_line)
         with self.lock:
             existing = self.collection.get(ids=[chunk_id], include=["metadatas"])
             # skip if chunk already exists, but ensure rule_id is set if chunk matches

@@ -4,11 +4,21 @@ init:
 run:
 	uv run python chatbot.py
 
+chat:
+	uv run python chat_cli.py
+
+reindex:
+	rm -rf chroma_db
+	uv run python -m scripts.reload_db
+
 check:
 	uv run ruff format .
 	uv run ruff check --fix .
 
 test:
-	uv run python -m unittest discover tests
+	uv run pytest
 
-.PHONY: check init run test
+test-live:
+	RUN_LIVE_TESTS=1 uv run pytest -m live
+
+.PHONY: chat check init run reindex test test-live

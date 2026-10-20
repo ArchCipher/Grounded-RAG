@@ -1,12 +1,37 @@
-# Chatbot MVP
+# Grounded RAG
 
 ## About
 
-Personal project: RAG chatbot to explore document Q&A and retrieval. I'm developing it toward secure-coding use (e.g. querying coding standards and eventually checking code for security issues). The current MVP ingests PDFs and markdown and answers from those documents.
+A retrieval-augmented generation system designed to keep an LLM strictly grounded to a controlled set of internal documents. The goal is to answer only from approved sources, refuse to guess when information is missing, and avoid leaking or hallucinating outside knowledge. SEI CERT documents are used here purely as a test corpus.
 
 ## Overview
 
-Lets you ask questions over your own documents and get answers grounded in them. For structured rule sets (e.g. coding standards), it can prioritize the relevant rule when you ask by name (e.g. "What is PRE30-C?"). Built with FastAPI and ChromaDB.
+This project explores controlled knowledge retrieval: ingest your own documents (PDF/Markdown), index them in ChromaDB, and ask questions with answers constrained to those documents. It focuses on retrieval engineering to prevent hallucinations, with citations back to the source passages used. Built with FastAPI and ChromaDB.
+
+## What it does / doesn't do
+
+**Does**
+
+- **Strict grounding** – answers only from retrieved passages in the indexed corpus; if something isn't there, it says so explicitly.
+- **Source citations** – each answer references the source passages used for traceability.
+- **Precise retrieval for structured docs** – detects rule/identifier patterns (e.g. `PRE30-C`) and pulls the relevant section directly.
+- **Noise reduction** – configurable chunking, metadata-based boosting, and a distance threshold to filter weak matches.
+- **Resilient ingestion** – incremental re-indexing, skip-and-continue on failures, and environment-driven configuration.
+- **Interactive use** – JSON API (`POST /chat`) plus a CLI (`make chat`).
+
+**Doesn't (yet)**
+
+- **No general knowledge fallback** – intentionally disabled to prevent hallucination on missing information.
+- **No code analysis** – explains content from indexed documents, but does not scan source files or report violations with line numbers.
+- **No conversation memory** – `session_id` is accepted but each request is independent.
+- **Narrow corpus** – it only knows what you've indexed in `source_docs`. If information isn't present, it will say so rather than guessing.
+
+## Key Challenges & Solutions
+
+- **Rule chunks broken apart** – Naive header-based splitting fragmented rule definitions and their examples into separate chunks. *Solution:* Implemented rule-aware splitting that keeps each rule (definition + examples) intact, slicing at rule-id headers. Oversized rules are sub-split with the rule header repeated in every part.
+- **Appendix swallowed by last rule** – The bibliography appendix was absorbed into the final rule chunk. *Solution:* Halt rule-based slicing at `Appendix`/`Bibliography`/`Glossary` boundaries and index them separately.
+- **Unhyphenated rule IDs missed retrieval** – Queries like `pre31c` didn't match indexed rule metadata, leading to weak retrieval and occasional hallucination. *Solution:* Normalized rule IDs (e.g. `pre31c`, `PRE 31 C` → `PRE31-C`) before lookup and boosted the exact rule on demand.
+- **Noise in retrieved context** – Distant chunks diluted the prompt and increased the chance of off-topic answers. *Solution:* Added a configurable distance threshold (rule matches bypass the filter) and deduplicated results.
 
 ## Requirements
 
@@ -195,8 +220,8 @@ or run multiple tests:
   - [chroma/](chroma/) - ChromaDB client implementation with vector database operations
   - [github_downloader/](github_downloader/) - see [github_downloader/README.md](./github_downloader/README.md)
 - Scripts: [scripts/](scripts/)
-  - [reload_db.py](scripts/reload_db.py) - script to reload Chroma collection. Run: `python -m scripts.reload_db` (or `uv run python -m scripts.reload_db` without venv)
-  - [remove_db_files.py](scripts/remove_db_files.py) - script to remove file from Chroma collection. Run: `python -m scripts.remove_db_files` (or `uv run python -m scripts.remove_db_files` without venv)
+  - [reload_db.py](scripts/reload_db.py) - reload Chroma collection. Run: `python -m scripts.reload_db`
+  - [remove_db_files.py](scripts/remove_db_files.py) - remove files from Chroma collection
 - Curl scripts: [curl_scripts/](curl_scripts/)
   - [test_health.sh](curl_scripts/test_health.sh) – Test GET / endpoint
   - [test_chatbot.sh](curl_scripts/test_chatbot.sh) - Test POST /chat endpoint

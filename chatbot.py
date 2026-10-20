@@ -41,10 +41,18 @@ class ChatResponse(BaseModel):
 
 
 # Constants
-SYSTEM_PROMPT = """You are a helpful assistant. Use the provided context from
-the source documents to answer questions accurately. If the context doesn't
-contain relevant information, you can use your general knowledge but mention
-that the information isn't from the source documents. Be concise and helpful."""
+SYSTEM_PROMPT = """You are a documentation assistant. Answer ONLY using the context from
+the source documents provided below.
+
+Rules:
+- Base every statement on the provided context. Do not use outside or general knowledge.
+- Only describe an item if its full definition/content is present in the context.
+  A passing mention or cross-reference is NOT the item itself — do not describe,
+  summarize, or recommend something you only see cited.
+- If the context does not contain the answer, reply exactly: "I don't have that
+  information in the source documents." Do not guess or approximate.
+- When you reference something from the context, cite it exactly as written.
+- Be concise."""
 
 # Load environment variables
 load_dotenv()
