@@ -119,19 +119,20 @@ RAG (Retrieval-Augmented Generation)
 Documents -> Chunks -> Embeddings + Indexing (VectorDB: ChromaDB)
 
 **Query Phase (Per request):**
-User Query -> Embed Query -> Search Vector DB -> Retrieve top X Chunks -> Build prompt (retrieved chunks + user query) -> LLM -> Response
+User Query -> Normalize rule ID (if present) -> Retrieve with rule boost + semantic search (distance-filtered, deduplicated) -> Build grounded prompt (retrieved context only) -> LLM -> Response
 
 ```mermaid
 flowchart LR
   subgraph Indexing["Indexing"]
-    D[Documents] --> C[Chunks]
-    C --> E[Embed]
+    D[Documents] --> RS[Rule-aware split]
+    RS --> E[Embed]
     E --> V[(ChromaDB)]
   end
   subgraph Query["Query"]
-    Q[User Query] --> EQ[Embed Query]
-    EQ --> R[Retrieve]
-    R --> CTX[Build Context]
+    Q[User Query] --> NR[Normalize rule ID]
+    NR --> R[Retrieve + boost]
+    R --> DF[Distance filter + deduplicate]
+    DF --> CTX[Build grounded context]
     CTX --> LLM[LLM]
     LLM --> RES[Response]
   end
@@ -141,8 +142,8 @@ flowchart LR
 **Components:**
 
 - **Chunking**:
-  1. Header-based splitting: Regex-based splitting on any level-2 markdown header (`## `) to preserve semantic boundaries
-  2. Recursive character splitting: [langchain_text_splitters.RecursiveCharacterTextSplitter](https://docs.langchain.com/oss/python/integrations/splitters) for further chunking if sections exceed chunk_size (configurable via `CHUNK_SIZE`, `CHUNK_OVERLAP`)
+  1. Rule-aware splitting: Slices markdown at rule-id headers (when present) to keep each rule's definition and examples together. Oversized rules are sub-split with the header repeated in every part.
+  2. Recursive character splitting: [langchain_text_splitters.RecursiveCharacterTextSplitter](https://docs.langchain.com/oss/python/integrations/splitters) for further splitting and as a fallback for documents without rule headers (configurable via `CHUNK_SIZE`, `CHUNK_OVERLAP`).
 - **Vector Database**: [chromadb](https://github.com/chroma-core/chroma) (embedding and indexing)
 - **LLM**: [google-genai](https://github.com/googleapis/python-genai) (Gemini 2.5 Flash)
 
@@ -150,19 +151,11 @@ flowchart LR
 
 Docs are loaded from the collection folder at server startup (default `source_docs`, overridable via `COLLECTION_PATH`). Reload when you update docs.
 
-ChromaDB automatically handles tokenization, embedding, and indexing when documents are added via `collection.add()`.
+ChromaDB automatically handles embedding and indexing when documents are added via the indexer. Retrieval uses semantic search with optional rule-id boosting and distance filtering.
 
 ## Sample retrieval
 
-For a rule-specific query, the retrieval pipeline prepends the matching rule chunk (distance 0.0) then fills the rest with semantic search. The example below uses coding-standard documents (e.g. CERT C/C++ rules); you add your own in `source_docs`. Example for "What is PRE30-C?" with `N_RESULTS=50`:
-
-| Step            | Result |
-|-----------------|--------|
-| Rule boost      | 1 chunk (PRE30-C definition) |
-| Semantic search | Top 49 additional chunks (after dedup) |
-| Total returned  | 50 chunks; first chunk = PRE30-C (distance 0.0) |
-
-Example `query_summary` (concise): `distances: [0.0, 1.28, 1.33, ...], rules_found_in_chunks: ["PRE30-C"]`. See [sample retrieval output](docs/sample_retrieval_output.md) for a short sanitized log excerpt. The sample uses [SEI CERT C and C++ Coding Standards](https://www.sei.cmu.edu/library/sei-cert-c-and-c-coding-standards/)(2016 editions)
+For a query that names a rule (e.g. one from a document in `source_docs`), the retrieval pipeline boosts the matching rule to the top (distance 0.0), then fills remaining results with semantic search and deduplicates. The context returned includes source labels for traceability. See [sample retrieval output](docs/sample_retrieval_output.md) for a sanitized example.
 
 ## Future improvement
 
