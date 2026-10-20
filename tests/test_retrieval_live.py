@@ -19,7 +19,9 @@ pytestmark = pytest.mark.live
 
 RUN_LIVE = os.getenv("RUN_LIVE_TESTS") or os.getenv("TEST_USE_REAL_DB")
 if not RUN_LIVE:
-    pytest.skip("set RUN_LIVE_TESTS=1 to run against the real ChromaDB", allow_module_level=True)
+    pytest.skip(
+        "set RUN_LIVE_TESTS=1 to run against the real ChromaDB", allow_module_level=True
+    )
 
 
 @pytest.fixture(scope="module")

@@ -82,7 +82,9 @@ class FakeCollection:
     def get(self, where=None, include=None):
         matched = self.docs
         if where and "rule_id" in where:
-            matched = [d for d in self.docs if d["metadata"].get("rule_id") == where["rule_id"]]
+            matched = [
+                d for d in self.docs if d["metadata"].get("rule_id") == where["rule_id"]
+            ]
         return {
             "ids": [d["id"] for d in matched],
             "documents": [d["document"] for d in matched],
@@ -111,7 +113,11 @@ def fake_collection():
             {
                 "id": "rule_pre30",
                 "document": "## **2.1 PRE30-C. Do not create a universal character name**",
-                "metadata": {"source": "standard.md", "rule_id": "PRE30-C", "chunk_index": 1},
+                "metadata": {
+                    "source": "standard.md",
+                    "rule_id": "PRE30-C",
+                    "chunk_index": 1,
+                },
                 "distance_to_query": 0.9,
             },
             {

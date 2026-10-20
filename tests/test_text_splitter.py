@@ -22,7 +22,9 @@ class TestRuleAwareSplitting:
         assert "noncompliant" in chunk.lower()
         assert "compliant" in chunk.lower()
 
-    def test_each_rule_yields_a_chunk_starting_with_its_header(self, rule_doc, splitter):
+    def test_each_rule_yields_a_chunk_starting_with_its_header(
+        self, rule_doc, splitter
+    ):
         chunks = splitter.split(rule_doc)
         headers = [c.splitlines()[0] for c in chunks if RULE_HEADER_PATTERN.match(c)]
         assert any("PRE30-C" in h for h in headers)
@@ -40,7 +42,9 @@ class TestRuleAwareSplitting:
 
     def test_falls_back_when_no_rules(self, tmp_path):
         path = tmp_path / "plain.md"
-        path.write_text("## Intro\n\nSome text.\n\n## Detail\n\nMore text.\n", encoding="utf-8")
+        path.write_text(
+            "## Intro\n\nSome text.\n\n## Detail\n\nMore text.\n", encoding="utf-8"
+        )
         chunks = TextSplitter(chunk_size=50, chunk_overlap=5).split(str(path))
         assert chunks
         assert not any(RULE_HEADER_PATTERN.match(c) for c in chunks)

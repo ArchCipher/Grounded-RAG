@@ -86,5 +86,7 @@ class TestEndToEndRuleRetrieval:
 
     def test_semantic_query_still_returns_context(self, rag):
         _, retriever = rag
-        results = retriever.get_query_results("storage duration of local objects", n_results=3)
+        results = retriever.get_query_results(
+            "storage duration of local objects", n_results=3
+        )
         assert results

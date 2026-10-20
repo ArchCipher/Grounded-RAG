@@ -25,7 +25,9 @@ def indexer(tmp_path, request):
 
 class TestChunkId:
     def test_deterministic(self):
-        assert ChromaIndexer._generate_md5_hash("t", "/f.md") == ChromaIndexer._generate_md5_hash("t", "/f.md")
+        assert ChromaIndexer._generate_md5_hash(
+            "t", "/f.md"
+        ) == ChromaIndexer._generate_md5_hash("t", "/f.md")
 
     def test_content_and_source_matter(self):
         a = ChromaIndexer._generate_md5_hash("A", "/f.md")

@@ -82,9 +82,7 @@ class TextSplitter:
         # Text before the first rule header (title, table of contents, intro).
         preamble = text[: boundaries[0].start()].strip()
         if preamble:
-            chunks.extend(
-                self._split_section(preamble, header=None)
-            )
+            chunks.extend(self._split_section(preamble, header=None))
         # One slice per rule, from its header up to the next rule header (or the
         # start of the trailing sections / end of document).
         for i, match in enumerate(boundaries):

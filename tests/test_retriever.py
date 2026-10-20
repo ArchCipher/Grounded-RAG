@@ -24,7 +24,9 @@ class TestRuleBoost:
     def test_non_rule_query_has_no_boost(self, fake_collection):
         retriever = ChromaRetriever(fake_collection, max_distance=None)
         results = retriever.get_query_results("tell me about macros", n_results=5)
-        assert all("PRE30-C" not in r["content"] or r["distance"] != 0.0 for r in results)
+        assert all(
+            "PRE30-C" not in r["content"] or r["distance"] != 0.0 for r in results
+        )
 
 
 class TestDistanceFiltering:
