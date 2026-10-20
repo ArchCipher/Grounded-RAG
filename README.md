@@ -17,6 +17,7 @@ This project explores controlled knowledge retrieval: ingest your own documents 
 - **Precise retrieval for structured docs** – detects rule/identifier patterns (e.g. `PRE30-C`) and pulls the relevant section directly.
 - **Noise reduction** – configurable chunking, metadata-based boosting, and a distance threshold to filter weak matches.
 - **Resilient ingestion** – incremental re-indexing, skip-and-continue on failures, and environment-driven configuration.
+- **MCP-ready** – exposes `search`, `ask`, and `get_rule` tools via `mcp_server.py` so AI agents can query the grounded knowledge base.
 - **Interactive use** – JSON API (`POST /chat`) plus a CLI (`make chat`).
 
 **Doesn't (yet)**
@@ -82,6 +83,30 @@ With the venv activated (see Installation), from the repo root:
 Run with: `python chatbot.py`
 
 Without activating the venv, prefix with `uv run`: `uv run python chatbot.py`
+
+## MCP Server
+
+The repo exposes an MCP server via `mcp_server.py` with tools: `search`, `ask`, and `get_rule`.
+
+Test it with the MCP Inspector:
+
+```sh
+bunx @modelcontextprotocol/inspector uv run python mcp_server.py
+```
+
+You can also add it to your MCP client config (e.g. Cursor, Claude):
+
+```json
+{
+  "mcpServers": {
+    "grounded-rag": {
+      "command": "uv",
+      "args": ["run", "python", "mcp_server.py"],
+      "cwd": "/path/to/rag_chatbot"
+    }
+  }
+}
+```
 
 ## Run with Docker (local)
 
@@ -219,3 +244,8 @@ or run multiple tests:
   - [test_health.sh](curl_scripts/test_health.sh) – Test GET / endpoint
   - [test_chatbot.sh](curl_scripts/test_chatbot.sh) - Test POST /chat endpoint
   - [tests.sh](curl_scripts/tests.sh) - Multiple tests POST /chat endpoint
+
+## References
+
+- [Github modelcontextprotocol servers](https://github.com/modelcontextprotocol/servers)
+- [Github modelcontextprotocol python-sdk](https://github.com/modelcontextprotocol/python-sdk)
