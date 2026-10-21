@@ -22,7 +22,7 @@ rag_client = RagClient(
 
 def main() -> None:
     logging.basicConfig(
-        filename="chatbot.log",
+        filename="app.log",
         level=logging.INFO,
         format="[%(asctime)s][%(levelname)s][%(name)s][%(message)s]",
     )

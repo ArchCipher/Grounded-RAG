@@ -1,4 +1,4 @@
-# Chatbot – issues & learnings
+# Grounded RAG – issues & learnings
 
 ## 1. Indexing / duplicates
 

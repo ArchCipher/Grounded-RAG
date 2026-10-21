@@ -10,6 +10,6 @@ COPY . .
 RUN uv sync --frozen --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
-CMD ["uvicorn", "chatbot:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
 # CMD is used to START the container AFTER building
 # there can be only 1 CMD command in a dockerfile

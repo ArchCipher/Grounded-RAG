@@ -1,5 +1,5 @@
 services:
-  chatbot:
+  grounded_rag:
     build: .
     env_file: .env
     ports:

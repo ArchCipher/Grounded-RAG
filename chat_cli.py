@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""chat_cli.py - interactive client for the RAG chatbot.
+"""chat_cli.py - interactive client for the Grounded RAG API.
 
 Start the server first (in another terminal):
 

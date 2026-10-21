@@ -1,5 +1,5 @@
 """
-FastAPI client for RAG chatbot
+FastAPI client for Grounded RAG
 
 - FastAPI: Python web framework to build APIs
 - Uvicorn: ASGI server used to run the FastAPI app
@@ -23,7 +23,7 @@ from pydantic import BaseModel
 from chroma import RagClient
 
 # Logging
-logger = logging.getLogger("chatbot")
+logger = logging.getLogger("grounded_rag")
 
 
 # Pydantic request and response models
@@ -133,9 +133,7 @@ async def main() -> None:
     else:
         logging.basicConfig(stream=sys.stdout)
     # Run Uvicorn programmatically
-    config = uvicorn.Config(
-        "chatbot:app", port=8000
-    )  # use reload=True if not production
+    config = uvicorn.Config("app:app", port=8000)  # use reload=True if not production
     server = uvicorn.Server(config)
     await server.serve()
 

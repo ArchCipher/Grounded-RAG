@@ -2,7 +2,7 @@ init:
 	uv sync --extra dev
 
 run:
-	uv run python chatbot.py
+	uv run python app.py
 
 chat:
 	uv run python chat_cli.py

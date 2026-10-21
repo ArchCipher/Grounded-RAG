@@ -1,6 +1,6 @@
 # GithubDownloader
 
-Downloads markdown from GitHub repo URLs into a target directory (default `source_docs`). Used to fetch docs from GitHub for the chatbot. The list of repos to download is read from a JSON file.
+Downloads markdown from GitHub repo URLs into a target directory (default `source_docs`). Used to fetch docs from GitHub for the RAG app. The list of repos to download is read from a JSON file.
 
 Note:
 

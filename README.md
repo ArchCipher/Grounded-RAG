@@ -68,21 +68,21 @@ This project explores controlled knowledge retrieval: ingest your own documents 
 
 - Use a folder named `source_docs` for your documents, or set the `COLLECTION_PATH` env variable to your folder path. To fetch docs from GitHub into source_docs, run the [github_downloader](./github_downloader/README.md) with a JSON file listing repo URLs: edit `github_downloader/urls.json` then run `python -m github_downloader`.
 
-**Note:** The chatbot accepts any markdown/pdf documents you provide. PDFs are automatically converted to markdown during indexing. The `source_docs` folder is not included in this repository—you must add your own documents.
+**Note:** The API accepts any markdown/pdf documents you provide. PDFs are automatically converted to markdown during indexing. The `source_docs` folder is not included in this repository—you must add your own documents.
 
 - The vectordb uses persistent storage (default `./chroma_db`). Override with `PERSISTENT_STORAGE` in `.env` (see [.env.example](./.env.example)).
 
 - File modification times are stored in a JSON file there (default `file_hashes.json`, override `HASH_FILE`) for incremental re-indexing. Format: [sample_file_hashes.json](docs/sample_file_hashes.json).
 
-- Logging goes to standard output by default. Set `LOG_FILE` in `.env` (e.g. `LOG_FILE=chatbot.log`) to write logs to a file.
+- Logging goes to standard output by default. Set `LOG_FILE` in `.env` (e.g. `LOG_FILE=app.log`) to write logs to a file.
 
 ## Run
 
 With the venv activated (see Installation), from the repo root:
 
-Run with: `python chatbot.py`
+Run with: `python app.py`
 
-Without activating the venv, prefix with `uv run`: `uv run python chatbot.py`
+Without activating the venv, prefix with `uv run`: `uv run python app.py`
 
 ## MCP Server
 
@@ -102,7 +102,7 @@ You can also add it to your MCP client config (e.g. Cursor, Claude):
     "grounded-rag": {
       "command": "uv",
       "args": ["run", "python", "mcp_server.py"],
-      "cwd": "/path/to/rag_chatbot"
+      "cwd": "/path/to/grounded_rag"
     }
   }
 }
@@ -210,7 +210,7 @@ FastAPI automatically generates interactive API documentation:
 
 ## Testing
 
-1. Start the server: `python chatbot.py` (or `uv run python chatbot.py` if the venv is not activated)
+1. Start the server: `python app.py` (or `uv run python app.py` if the venv is not activated)
 
 2. In another terminal, test the health endpoint:
 
@@ -221,7 +221,7 @@ FastAPI automatically generates interactive API documentation:
 3. Test a conversation:
 
 ```bash
-./curl_scripts/test_chatbot.sh
+./curl_scripts/test_chat_endpoint.sh
 ```
 
 or run multiple tests:
@@ -232,7 +232,7 @@ or run multiple tests:
 
 ## Files Reference
 
-- Main implementation: [chatbot.py](chatbot.py) – FastAPI app. RAG and vector DB in the [chroma/](chroma/) package
+- Main implementation: [app.py](app.py) – FastAPI app. RAG and vector DB in the [chroma/](chroma/) package
 - Configuration: [pyproject.toml](pyproject.toml), [uv.lock](uv.lock), [.env.example](.env.example)
 - Packages
   - [chroma/](chroma/) - ChromaDB client implementation with vector database operations
@@ -242,7 +242,7 @@ or run multiple tests:
   - [remove_db_files.py](scripts/remove_db_files.py) - remove files from Chroma collection
 - Curl scripts: [curl_scripts/](curl_scripts/)
   - [test_health.sh](curl_scripts/test_health.sh) – Test GET / endpoint
-  - [test_chatbot.sh](curl_scripts/test_chatbot.sh) - Test POST /chat endpoint
+  - [test_chat_endpoint.sh](curl_scripts/test_chat_endpoint.sh) - Test POST /chat endpoint
   - [tests.sh](curl_scripts/tests.sh) - Multiple tests POST /chat endpoint
 
 ## References
