@@ -8,7 +8,7 @@ A retrieval-augmented generation system designed to keep an LLM strictly grounde
 
 This project explores controlled knowledge retrieval: ingest your own documents (PDF/Markdown), index them in ChromaDB, and ask questions with answers constrained to those documents. It focuses on retrieval engineering to prevent hallucinations, with citations back to the source passages used. Built with FastAPI and ChromaDB.
 
-<p align="center"> <img src="docs/demo.gif" alt="rag chat demo: what it does and doesn't" width="800"> </p>
+<p align="center"> <img src="docs/chat-demo.gif" alt="rag chat demo: what it does and doesn't" width="800"> </p>
 
 ## What it does / doesn't do
 
@@ -95,6 +95,8 @@ Test it with the MCP Inspector:
 ```sh
 bunx @modelcontextprotocol/inspector uv run python mcp_server.py
 ```
+
+<p align="center"> <img src="docs/mcp-demo.gif" alt="rag mcp server demo: mcp inspector" width="800"> </p>
 
 You can also add it to your MCP client config (e.g. Cursor, Claude):
 
