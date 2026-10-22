@@ -8,6 +8,8 @@ A retrieval-augmented generation system designed to keep an LLM strictly grounde
 
 This project explores controlled knowledge retrieval: ingest your own documents (PDF/Markdown), index them in ChromaDB, and ask questions with answers constrained to those documents. It focuses on retrieval engineering to prevent hallucinations, with citations back to the source passages used. Built with FastAPI and ChromaDB.
 
+<p align="center"> <img src="docs/demo.gif" alt="rag chat demo: what it does and doesn't" width="800"> </p>
+
 ## What it does / doesn't do
 
 **Does**
@@ -247,5 +249,6 @@ or run multiple tests:
 
 ## References
 
+- [Bun installation](https://bun.com/docs/installation)
 - [Github modelcontextprotocol servers](https://github.com/modelcontextprotocol/servers)
 - [Github modelcontextprotocol python-sdk](https://github.com/modelcontextprotocol/python-sdk)
